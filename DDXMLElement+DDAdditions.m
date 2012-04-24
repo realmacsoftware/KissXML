@@ -1,4 +1,5 @@
-#import "DDXMLElementAdditions.h"
+
+#import "DDXMLElement+DDAdditions.h"
 
 @implementation DDXMLElement (DDAdditions)
 

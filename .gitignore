@@ -1,4 +1,34 @@
-*.pbxuser
-*.mode1v3
-*.mode2v3
+# OS X
+.DS_Store
+.DS_store
+profile
+
+# XCode
+*.mode*
+*.perspective*
+*.pbxuser*
+*tmproj
+External/GHUnit/*
+PLBlocks.framework/*
+*.pyc
+
+# for Xcode 4
 xcuserdata
+
+# built products
+build
+*.o
+
+# Other source repository archive directories
+.hg
+.svn
+CVS
+
+# Automatic backup files
+#~.nib/
+*.swp
+*~
+*(Autosaved).rtfd/
+Backup[ ]of[ ]*.pages/
+Backup[ ]of[ ]*.key/                
+Backup[ ]of[ ]*.numbers/

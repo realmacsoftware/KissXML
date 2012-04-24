@@ -1,5 +1,11 @@
-#import "DDXMLPrivate.h"
-#import "NSString+DDXML.h"
+
+#import "DDXMLDocument.h"
+
+#import "KissXML+Private.h"
+#import "DDXMLNode+Private.h"
+#import "DDXMLElement+Private.h"
+
+#import "KissXML-Constants.h"
 
 /**
  * Welcome to KissXML.
@@ -59,11 +65,9 @@
  * Returns an initialized DDXMLDocument object, or nil if initialization fails
  * because of parsing errors or other reasons.
 **/
-- (id)initWithXMLString:(NSString *)string options:(NSUInteger)mask error:(NSError **)error
+- (id)initWithXMLString:(NSString *)string options:(NSUInteger)mask error:(NSError **)errorRef
 {
-	return [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding]
-	                  options:mask
-	                    error:error];
+	return [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:mask error:errorRef];
 }
 
 /**
@@ -72,15 +76,19 @@
  * Returns an initialized DDXMLDocument object, or nil if initialization fails
  * because of parsing errors or other reasons.
 **/
-- (id)initWithData:(NSData *)data options:(NSUInteger)mask error:(NSError **)error
+- (id)initWithData:(NSData *)data options:(NSUInteger)mask error:(NSError **)errorRef
 {
 	if (data == nil || [data length] == 0)
 	{
-		if (error) *error = [NSError errorWithDomain:@"DDXMLErrorDomain" code:0 userInfo:nil];
+		if (errorRef != NULL) {
+			*errorRef = [NSError errorWithDomain:DDXMLBundleIdentifier code:DDXMLErrorCodeUnknown userInfo:nil];
+		}
 		
 		[self release];
 		return nil;
 	}
+	
+	DDXMLCheckAndSetErrorHandlerForCurrentThread();
 	
 	// Even though xmlKeepBlanksDefault(0) is called in DDXMLNode's initialize method,
 	// it has been documented that this call seems to get reset on the iPhone:
@@ -92,7 +100,9 @@
 	xmlDocPtr doc = xmlParseMemory([data bytes], [data length]);
 	if (doc == NULL)
 	{
-		if (error) *error = [NSError errorWithDomain:@"DDXMLErrorDomain" code:1 userInfo:nil];
+		if (errorRef != NULL) {
+			*errorRef = [NSError errorWithDomain:DDXMLBundleIdentifier code:DDXMLErrorCodeUnknown userInfo:nil];
+		}
 		
 		[self release];
 		return nil;
@@ -106,9 +116,9 @@
 **/
 - (DDXMLElement *)rootElement
 {
-#if DDXML_DEBUG_MEMORY_ISSUES
 	DDXMLNotZombieAssert();
-#endif
+	
+	DDXMLCheckAndSetErrorHandlerForCurrentThread();
 	
 	xmlDocPtr doc = (xmlDocPtr)genericPtr;
 	
@@ -116,10 +126,11 @@
 	
 	xmlNodePtr rootNode = xmlDocGetRootElement(doc);
 	
-	if (rootNode != NULL)
+	if (rootNode != NULL) {
 		return [DDXMLElement nodeWithElementPrimitive:rootNode owner:self];
-	else
-		return nil;
+	}
+	
+	return nil;
 }
 
 - (NSData *)XMLData

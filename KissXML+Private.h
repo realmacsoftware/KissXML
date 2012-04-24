@@ -1,101 +1,5 @@
-/**
- * Welcome to KissXML.
- * 
- * The project page has documentation if you have questions.
- * https://github.com/robbiehanson/KissXML
- * 
- * If you're new to the project you may wish to read the "Getting Started" wiki.
- * https://github.com/robbiehanson/KissXML/wiki/GettingStarted
- * 
- * KissXML provides a drop-in replacement for Apple's NSXML class cluster.
- * The goal is to get the exact same behavior as the NSXML classes.
- * 
- * For API Reference, see Apple's excellent documentation,
- * either via Xcode's Mac OS X documentation, or via the web:
- * 
- * https://github.com/robbiehanson/KissXML/wiki/Reference
-**/
 
-#import "DDXMLNode.h"
-#import "DDXMLElement.h"
-#import "DDXMLDocument.h"
-
-
-
-#if TARGET_OS_IPHONE && 0 // Disabled by default
-
-// Since KissXML is a drop in replacement for NSXML,
-// it may be desireable (when writing cross-platform code to be used on both Mac OS X and iOS)
-// to use the NSXML prefixes instead of the DDXML prefix.
-// 
-// This way, on Mac OS X it uses NSXML, and on iOS it uses KissXML.
-
-#ifndef NSXMLNode
-  #define NSXMLNode DDXMLNode
-#endif
-#ifndef NSXMLElement
-  #define NSXMLElement DDXMLElement
-#endif
-#ifndef NSXMLDocument
-  #define NSXMLDocument DDXMLDocument
-#endif
-
-#ifndef NSXMLInvalidKind
-  #define NSXMLInvalidKind DDXMLInvalidKind
-#endif
-#ifndef NSXMLDocumentKind
-  #define NSXMLDocumentKind DDXMLDocumentKind
-#endif
-#ifndef NSXMLElementKind
-  #define NSXMLElementKind DDXMLElementKind
-#endif
-#ifndef NSXMLAttributeKind
-  #define NSXMLAttributeKind DDXMLAttributeKind
-#endif
-#ifndef NSXMLNamespaceKind
-  #define NSXMLNamespaceKind DDXMLNamespaceKind
-#endif
-#ifndef NSXMLProcessingInstructionKind
-  #define NSXMLProcessingInstructionKind DDXMLProcessingInstructionKind
-#endif
-#ifndef NSXMLCommentKind
-  #define NSXMLCommentKind DDXMLCommentKind
-#endif
-#ifndef NSXMLTextKind
-  #define NSXMLTextKind DDXMLTextKind
-#endif
-#ifndef NSXMLDTDKind
-  #define NSXMLDTDKind DDXMLDTDKind
-#endif
-#ifndef NSXMLEntityDeclarationKind
-  #define NSXMLEntityDeclarationKind DDXMLEntityDeclarationKind
-#endif
-#ifndef NSXMLAttributeDeclarationKind
-  #define NSXMLAttributeDeclarationKind DDXMLAttributeDeclarationKind
-#endif
-#ifndef NSXMLElementDeclarationKind
-  #define NSXMLElementDeclarationKind DDXMLElementDeclarationKind
-#endif
-#ifndef NSXMLNotationDeclarationKind
-  #define NSXMLNotationDeclarationKind DDXMLNotationDeclarationKind
-#endif
-
-#ifndef NSXMLNodeOptionsNone
-  #define NSXMLNodeOptionsNone DDXMLNodeOptionsNone
-#endif
-#ifndef NSXMLNodeExpandEmptyElement
-  #define NSXMLNodeExpandEmptyElement DDXMLNodeExpandEmptyElement
-#endif
-#ifndef NSXMLNodeCompactEmptyElement
-  #define NSXMLNodeCompactEmptyElement DDXMLNodeCompactEmptyElement
-#endif
-#ifndef NSXMLNodePrettyPrint
-  #define NSXMLNodePrettyPrint DDXMLNodePrettyPrint
-#endif
-
-#endif // #if TARGET_OS_IPHONE
-
-
+#import <Foundation/Foundation.h>
 
 // KissXML has rather straight-forward memory management:
 // https://github.com/robbiehanson/KissXML/wiki/MemoryManagementThreadSafety
@@ -190,7 +94,56 @@
 // The debugging macro adds a significant amount of overhead, and should NOT be enabled on production builds.
 
 #if DEBUG
-  #define DDXML_DEBUG_MEMORY_ISSUES 0
+	#define DDXML_DEBUG_MEMORY_ISSUES 0
 #else
-  #define DDXML_DEBUG_MEMORY_ISSUES 0 // Don't change me!
-#endif
+	#define DDXML_DEBUG_MEMORY_ISSUES 0 // Don't change me!
+#endif /* DEBUG */
+
+
+// We can't rely solely on NSAssert, because many developers disable them for release builds.
+// Our API contract requires us to keep these assertions intact.
+#define DDXMLAssert(condition, desc, ...)																		\
+do {																											\
+	if (!(condition)) {																							\
+		[[NSAssertionHandler currentHandler] handleFailureInMethod:_cmd											\
+															object:self											\
+																file:[NSString stringWithUTF8String:__FILE__]	\
+														lineNumber:__LINE__										\
+														description:(desc), ##__VA_ARGS__];						\
+	}																											\
+} while(NO)
+
+// Create assertion to ensure xml node is not a zombie.
+#if DDXML_DEBUG_MEMORY_ISSUES
+#define DDXMLNotZombieAssert()																					\
+do {																											\
+	if (DDXMLIsZombie(genericPtr, self)) {																		\
+		NSString *desc = @"XML node is a zombie - It's parent structure has been freed!";						\
+		[[NSAssertionHandler currentHandler] handleFailureInMethod:_cmd											\
+															object:self											\
+																file:[NSString stringWithUTF8String:__FILE__]	\
+														lineNumber:__LINE__										\
+														description:desc];										\
+	}																											\
+} while(NO)
+#else
+#define DDXMLNotZombieAssert()
+#endif /* DDXML_DEBUG_MEMORY_ISSUES */
+
+
+
+/*!
+	\brief
+	Key for thread dictionaries
+ */
+extern NSString *const DDXMLLastErrorKey;
+extern NSString *const DDXMLErrorFunctionIsSetKey;
+
+
+
+/*!
+	\brief
+	Checks whether the error handler custom function has been set for the current thread
+	and set it otherwise.
+ */
+void DDXMLCheckAndSetErrorHandlerForCurrentThread(void);

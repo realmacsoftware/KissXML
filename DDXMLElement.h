@@ -1,4 +1,6 @@
+
 #import <Foundation/Foundation.h>
+
 #import "DDXMLNode.h"
 
 /**
@@ -55,12 +57,12 @@
 
 #pragma mark --- Children ---
 
-- (void)insertChild:(DDXMLNode *)child atIndex:(NSUInteger)index;
-//- (void)insertChildren:(NSArray *)children atIndex:(NSUInteger)index;
-- (void)removeChildAtIndex:(NSUInteger)index;
+- (void)insertChild:(DDXMLNode *)child atIndex:(NSUInteger)idx;
+//- (void)insertChildren:(NSArray *)children atIndex:(NSUInteger)idx;
+- (void)removeChildAtIndex:(NSUInteger)idx;
 - (void)setChildren:(NSArray *)children;
 - (void)addChild:(DDXMLNode *)child;
-//- (void)replaceChildAtIndex:(NSUInteger)index withNode:(DDXMLNode *)node;
+//- (void)replaceChildAtIndex:(NSUInteger)idx withNode:(DDXMLNode *)node;
 //- (void)normalizeAdjacentTextNodesPreservingCDATA:(BOOL)preserve;
 
 @end

@@ -1,5 +1,5 @@
+
 #import <Foundation/Foundation.h>
-#import <libxml/tree.h>
 
 @class DDXMLDocument;
 
@@ -21,22 +21,21 @@
  * https://github.com/robbiehanson/KissXML/wiki/Reference
 **/
 
-enum {
-	DDXMLInvalidKind                = 0,
-	DDXMLDocumentKind               = XML_DOCUMENT_NODE,
-	DDXMLElementKind                = XML_ELEMENT_NODE,
-	DDXMLAttributeKind              = XML_ATTRIBUTE_NODE,
-	DDXMLNamespaceKind              = XML_NAMESPACE_DECL,
-	DDXMLProcessingInstructionKind  = XML_PI_NODE,
-	DDXMLCommentKind                = XML_COMMENT_NODE,
-	DDXMLTextKind                   = XML_TEXT_NODE,
-	DDXMLDTDKind                    = XML_DTD_NODE,
-	DDXMLEntityDeclarationKind      = XML_ENTITY_DECL,
-	DDXMLAttributeDeclarationKind   = XML_ATTRIBUTE_DECL,
-	DDXMLElementDeclarationKind     = XML_ELEMENT_DECL,
-	DDXMLNotationDeclarationKind    = XML_NOTATION_NODE
-};
 typedef NSUInteger DDXMLNodeKind;
+
+extern DDXMLNodeKind DDXMLInvalidKind;
+extern DDXMLNodeKind DDXMLDocumentKind;
+extern DDXMLNodeKind DDXMLElementKind;
+extern DDXMLNodeKind DDXMLAttributeKind;
+extern DDXMLNodeKind DDXMLNamespaceKind;
+extern DDXMLNodeKind DDXMLProcessingInstructionKind;
+extern DDXMLNodeKind DDXMLCommentKind;
+extern DDXMLNodeKind DDXMLTextKind;
+extern DDXMLNodeKind DDXMLDTDKind;
+extern DDXMLNodeKind DDXMLEntityDeclarationKind;
+extern DDXMLNodeKind DDXMLAttributeDeclarationKind;
+extern DDXMLNodeKind DDXMLElementDeclarationKind;
+extern DDXMLNodeKind DDXMLNotationDeclarationKind;
 
 enum {
 	DDXMLNodeOptionsNone            = 0,
@@ -50,16 +49,6 @@ enum {
 
 
 @interface DDXMLNode : NSObject <NSCopying>
-{
-	// Every DDXML object is simply a wrapper around an underlying libxml node
-	struct _xmlKind *genericPtr;
-	
-	// Every libxml node resides somewhere within an xml tree heirarchy.
-	// We cannot free the tree heirarchy until all referencing nodes have been released.
-	// So all nodes retain a reference to the node that created them,
-	// and when the last reference is released the tree gets freed.
-	DDXMLNode *owner;
-}
 
 //- (id)initWithKind:(DDXMLNodeKind)kind;
 
@@ -116,7 +105,7 @@ enum {
 - (DDXMLNode *)parent;
 - (NSUInteger)childCount;
 - (NSArray *)children;
-- (DDXMLNode *)childAtIndex:(NSUInteger)index;
+- (DDXMLNode *)childAtIndex:(NSUInteger)idx;
 
 - (DDXMLNode *)previousSibling;
 - (DDXMLNode *)nextSibling;
@@ -149,8 +138,22 @@ enum {
 
 #pragma mark --- XPath/XQuery ---
 
-- (NSArray *)nodesForXPath:(NSString *)xpath error:(NSError **)error;
-//- (NSArray *)objectsForXQuery:(NSString *)xquery constants:(NSDictionary *)constants error:(NSError **)error;
-//- (NSArray *)objectsForXQuery:(NSString *)xquery error:(NSError **)error;
+/*!
+	\brief
+	Invokes `nodesForXPath:namespaceMap:error:` with `NSXMLNode` like namespace behaviour
+ */
+- (NSArray *)nodesForXPath:(NSString *)XPath error:(NSError **)error;
+
+/*!
+	\brief
+	Register namespace prefix to URI tuples in the XPath parser.
+	
+	\param namespaceMap
+	Pass `nil` to mimic the `NSXMLNode` `nodesForXPath:error:` behaviour.
+ */
+- (NSArray *)nodesForXPath:(NSString *)XPath namespaceMap:(NSDictionary *)namespaceMap error:(NSError **)errorRef;
+
+//- (NSArray *)objectsForXQuery:(NSString *)XQuery constants:(NSDictionary *)constants error:(NSError **)error;
+//- (NSArray *)objectsForXQuery:(NSString *)XQuery error:(NSError **)error;
 
 @end
